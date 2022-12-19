@@ -176,6 +176,8 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Se
 
 # Windows Server 2022 Remote Desktop Services must be configured with the client connection encryption set to High Level.
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "MinEncryptionLevel" -Type DWord -Value 4
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\MinEncryptionLevel" -Name "(Default)" -Type String -Value 0
+
 
 ###########################
 ### Not in the registry ###
@@ -184,13 +186,14 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Se
 # Windows Server 2022 must prevent attachments from being downloaded from RSS feeds.
 ## Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds" -Name "DisableEnclosureDownload" -Type DWord -Value 1
 
-######
-### Start Here
-######
+##################
+### Start Here ###
+##################
 
 # Windows Server 2022 must prevent Indexing of encrypted files.
 ## Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Name "AllowIndexingEncryptedStoresOrItems" -Type DWord -Value 0
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Search\AllowIndexingEncryptedStoresOrItems" -Name "Default" -Type DWord -Value 0
+## Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Search\AllowIndexingEncryptedStoresOrItems" -Name "(Default)" -Type DWord -Value 0
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Search\AllowIndexingEncryptedStoresOrItems" -Name "(Default)" -Type String -Value 0
 
 
 # Windows Server 2022 must prevent users from changing installation options.
