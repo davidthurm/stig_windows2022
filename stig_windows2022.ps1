@@ -1,4 +1,11 @@
 ## ChatGPT Dec 15 2022 Version
+## https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_STIGViewer_2-17_Win64.zip
+## https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/scc-5.6_Windows_bundle.zip
+## https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_MS_Windows_Server_2022_V1R0-1_STIG_SCAP_1-2_DraftBenchmark.zip
+## https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_MS_Windows_Server_2022_V1R1_STIG.zip
+## Server Manager add feature Group Policy Management
+
+Import-Module GroupPolicy
 
 # Disabling Autoplay
 Set-ItemProperty -Path HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer -Name NoAutoplayfornonVolume -Type DWord -Value 1
@@ -16,7 +23,8 @@ Set-Item WSMan:\localhost\Client\Auth\Basic -Value $false
 Set-Item WSMan:\localhost\Service\Auth\Basic -Value $false
 
 # Windows Server 2022 must not allow anonymous enumeration of shares.
-Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters -Name RestrictAnonymous -Type DWord -Value 2Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Control\Lsa -Name ResetLockoutCount -Type DWord -Value 900000
+Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters -Name RestrictAnonymous -Type DWord -Value 2
+Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Control\Lsa -Name ResetLockoutCount -Type DWord -Value 900000
 
 
 # Windows Server 2022 LAN Manager authentication level must be configured to send NTLMv2 response only and to refuse LM and NTLM.
@@ -35,7 +43,9 @@ Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Control\Lsa -Name ResetLoc
 Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Control\Lsa -Name PasswordHistorySize -Type DWord -Value 24
 
 # Windows Server 2022 minimum password age must be configured to at least one day.
-Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Control\Lsa -Name MinPasswordAge -Type DWord -Value 86400
+# Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Control\Lsa -Name MinPasswordAge -Type DWord -Value 86400
+Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Control\Lsa -Name MinPasswordAge -Type DWord -Value 14
+Set-GPRegistryValue -Name "LocalGPO" -Key "HKLM\Software\Policies\Microsoft\Windows NT\CurrentVersion\Winlogon" -ValueName "MinimumPasswordAge" -Type DWord -Value 14
 
 # Windows Server 2020 minimum password length must be configured to 14 characters.
 Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Control\Lsa -Name MinPasswordLength -Type DWord -Value 14
