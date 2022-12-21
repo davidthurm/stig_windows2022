@@ -1,62 +1,117 @@
-SRG-OS-000329-GPOS-00128
-# Windows Server 2022 account lockout duration must be configured to 15 minutes or greater. 
-# SRG-OS-000021-GPOS-00005
+## ChatGPT Dec 15 2022 Version
+## https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_STIGViewer_2-17_Win64.zip
+## https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/scc-5.6_Windows_bundle.zip
+## https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_MS_Windows_Server_2022_V1R0-1_STIG_SCAP_1-2_DraftBenchmark.zip
+## https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_MS_Windows_Server_2022_V1R1_STIG.zip
+## Server Manager add feature Group Policy Management
+### Get-ChildItem -Path "C:\Windows\System32\GroupPolicy"
+
+
+$fancyDate = (Get-Date -f 'yyyy-MM-dd_HH-mm-ss') 
+Start-Transcript -Path "$($env:USERPROFILE)\Documents\MyScriptLog_$($fancyDate).txt" -NoClobber -Force
+
+
+# Windows Server 2022 account lockout duration must be configured to 15 minutes or greater.
+## This code does not clear the error.
+net accounts /lockoutduration:30
+Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Control\Lsa -Name LockoutDuration -Type DWord -Value 900000
+
+net accounts /MINPWLEN:14
+net accounts /MAXPWAGE:60
+net accounts /MINPWAGE:1
+net accounts /UNIQUEPW:24
+
+
+# Windows Server 2022 account lockout duration must be configured to 15 minutes or greater.
+## This code does not clear the error.
+net accounts /lockoutduration:30
+Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Control\Lsa -Name LockoutDuration -Type DWord -Value 900000
+
 # Windows Server 2022 must have the number of allowed bad logon attempts configured to three or less. 
-# SRG-OS-000021-GPOS-00005
+
 # Windows Server 2022 must have the period of time before the bad logon counter is reset configured to 15 minutes or greater. 
-# SRG-OS-000077-GPOS-00045
+
 # Windows Server 2022 password history must be configured to 24 passwords remembered. 
-# SRG-OS-000470-GPOS-00214
+
+net accounts /uniquepw:24
+
 # Windows Server 2022 must be configured to audit Account Logon - Credential Validation failures. 
-# SRG-OS-000004-GPOS-00004
+AuditPol /set /subcategory:"Credential Validation" /failure:enable
+
 # Windows Server 2022 must be configured to audit Account Management - User Account Management failures. 
-# SRG-OS-000327-GPOS-00127
+AuditPol /set /subcategory:"User Account Management" /failure:enable
+
 # Windows Server 2022 must be configured to audit Detailed Tracking - Process Creation successes. 
-# SRG-OS-000240-GPOS-00090
+AuditPol /set /subcategory:"Process Creation" /success:enable
+
 # Windows Server 2022 must be configured to audit Logon/Logoff - Account Lockout failures. 
-# SRG-OS-000470-GPOS-00214
+AuditPol /set /subcategory:"Account Lockout" /failure:enable
+
 # Windows Server 2022 must be configured to audit Object Access - Other Object Access Events successes. 
-# SRG-OS-000470-GPOS-00214
+AuditPol /set /subcategory:"Other Object Access Events" /success:enable
+
 # Windows Server 2022 must be configured to audit Object Access - Other Object Access Events failures. 
-# SRG-OS-000327-GPOS-00127
+AuditPol /set /subcategory:"Other Object Access Events" /failure:enable
+
 # Windows Server 2022 must be configured to audit Policy Change - Authorization Policy Change successes. 
-# SRG-OS-000327-GPOS-00127
+AuditPol /set /subcategory:"Authorization Policy Change" /success:enable
+
 # Windows Server 2022 must be configured to audit Privilege Use - Sensitive Privilege Use successes. 
-# SRG-OS-000327-GPOS-00127
+AuditPol /set /subcategory:"Sensitive Privilege Use" /success:enable
+
 # Windows Server 2022 must be configured to audit Privilege Use - Sensitive Privilege Use failures. 
-# SRG-OS-000327-GPOS-00127
+AuditPol /set /subcategory:"Sensitive Privilege Use" /failure:enable
+
 # Windows Server 2022 must be configured to audit System - IPsec Driver failures. 
-# SRG-OS-000327-GPOS-00127
+AuditPol /set /subcategory:"IPsec Driver" /failure:enable
+
 # Windows Server 2022 must be configured to audit System - Security System Extension successes. 
-# SRG-OS-000095-GPOS-00049
+AuditPol /set /subcategory:"Security System Extension" /success:enable
+
 # Windows Server 2022 must prevent the display of slide shows on the lock screen. 
-# SRG-OS-000095-GPOS-00049
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization" -Name "NoLockScreenSlideshow" -Type DWord -Value 1
+
 # Windows Server 2022 must have WDigest Authentication disabled. 
-# SRG-OS-000480-GPOS-00227
+## FAILS
+New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WinRM\Client" -Name "AllowDigest" -Type DWord -Value 0
+
 # Windows Server 2022 Internet Protocol version 6 (IPv6) source routing must be configured to the highest protection level to prevent IP source routing. 
-# SRG-OS-000480-GPOS-00227
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" -Name "DisableIPSourceRouting" -Type DWord -Value 2
+
 # Windows Server 2022 source routing must be configured to the highest protection level to prevent Internet Protocol (IP) source routing. 
-# SRG-OS-000480-GPOS-00227
+Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Services\Tcpip\Parameters" -Name "DisableIPSourceRouting" -Type DWord -Value 2
+
 # Windows Server 2022 must be configured to prevent Internet Control Message Protocol (ICMP) redirects from overriding Open Shortest Path First (OSPF)-generated routes. 
-# SRG-OS-000420-GPOS-00186
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "EnableICMPRedirect" -Type DWord -Value 0
+
 # Windows Server 2022 must be configured to ignore NetBIOS name release requests except from WINS servers. 
-# SRG-OS-000480-GPOS-00227
-# Windows Server 2022 insecure logons to an SMB server must be disabled. 
-# SRG-OS-000042-GPOS-00020
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Netbt\Parameters" -Name "NoNameReleaseOnDemand" -Type DWord -Value 1
+
+# Windows Server 2022 insecure logons to an SMB server must be disabled.
+## It is Disabled but the scanner does not pick it up.
+### New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LanmanWorkstation" -Name "AllowInsecureGuestAuth" -Type DWord -Value 0
+Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol
+Set-SmbServerConfiguration -EnableSMB2Protocol $false
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB2 -Type DWORD -Value 0 -Force
+Set-SmbServerConfiguration –EncryptData $true
+Set-SmbServerConfiguration –RejectUnencryptedAccess $false
+
 # Windows Server 2022 command line data must be included in process creation events. 
-# SRG-OS-000480-GPOS-00227
+## New-Item -force "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "ProcessCreationIncludeCmdLine_Enabled" -Type DWord -Value 1
+New-Item -force "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit\" -Name "ProcessCreationIncludeCmdLine_Enabled" -Type DWord -Value 1
+
 # Windows Server 2022 must be configured to enable Remote host allows delegation of nonexportable credentials. 
-# SRG-OS-000480-GPOS-00227
+
 # Windows Server 2022 group policy objects must be reprocessed even if they have not changed. 
-# SRG-OS-000095-GPOS-00049
+
 # Windows Server 2022 downloading print driver packages over HTTP must be turned off. 
-# SRG-OS-000095-GPOS-00049
+
 # Windows Server 2022 printing over HTTP must be turned off. 
-# SRG-OS-000095-GPOS-00049
+
 # Windows Server 2022 network selection user interface (UI) must not be displayed on the logon screen. 
-# SRG-OS-000480-GPOS-00227
+
 # Windows Server 2022 users must be prompted to authenticate when the system wakes from sleep (on battery). 
-# SRG-OS-000480-GPOS-00227
+
 # Windows Server 2022 users must be prompted to authenticate when the system wakes from sleep (plugged in). 
 # SRG-OS-000095-GPOS-00049
 # Windows Server 2022 Application Compatibility Program Inventory must be prevented from collecting data and sending the information to Microsoft. 
