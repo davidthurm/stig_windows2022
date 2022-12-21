@@ -88,124 +88,215 @@ Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Netbt\Parameters" -Name "NoNameReleaseOnDemand" -Type DWord -Value 1
 
 # Windows Server 2022 insecure logons to an SMB server must be disabled.
-## It is Disabled but the scanner does not pick it up.
+## NONE OF THESE FIXED THE SCAN
 ### New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LanmanWorkstation" -Name "AllowInsecureGuestAuth" -Type DWord -Value 0
 Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol
+Set-SmbServerConfiguration -EnableSMB1Protocol $false
 Set-SmbServerConfiguration -EnableSMB2Protocol $false
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB2 -Type DWORD -Value 0 -Force
 Set-SmbServerConfiguration –EncryptData $true
 Set-SmbServerConfiguration –RejectUnencryptedAccess $false
+Set-SmbServerConfiguration –AuditSmb1Access $true
+Set-SmbClientConfiguration -EnableInsecureGuestLogons $false -Confirm:$false 
+Set-SmbServerConfiguration -EncryptionCiphers "AES_128_GCM, AES_256_GCM" -Confirm:$false
 
 # Windows Server 2022 command line data must be included in process creation events. 
-## New-Item -force "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "ProcessCreationIncludeCmdLine_Enabled" -Type DWord -Value 1
-New-Item -force "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit\" -Name "ProcessCreationIncludeCmdLine_Enabled" -Type DWord -Value 1
+## NONE OF THESE FIXED THE SCAN
+New-Item -force "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "ProcessCreationIncludeCmdLine_Enabled" -Type DWord -Value 1
+New-Item -force "HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit" -Name "ProcessCreationIncludeCmdLine_Enabled" -Type Dword -Value 1
 
+#####################################################
 # Windows Server 2022 must be configured to enable Remote host allows delegation of nonexportable credentials. 
+## NONE OF THESE FIXED THE SCAN
+New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation" -Name "AllowProtectedCreds" -Type DWord -Value 1
+New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Windows\SOFTWARE\Microsoft\PolicyManager\default\CredentialsDelegation\RemoteHostAllowsDelegationOfNonExportableCredentials" -Name "AllowProtectedCreds" -Type DWord -Value 1
+
 
 # Windows Server 2022 group policy objects must be reprocessed even if they have not changed. 
+## NONE OF THESE FIXED THE SCAN
+New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2}" -Name "NoGPOListChanges" -Type DWord -Value 0
 
 # Windows Server 2022 downloading print driver packages over HTTP must be turned off. 
+## NONE OF THESE FIXED THE SCAN
+New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers" -Name "DisableWebPnPDownload" -Type DWord -Value 1
 
-# Windows Server 2022 printing over HTTP must be turned off. 
+# Windows Server 2022 printing over HTTP must be turned off.
+## NONE OF THESE FIXED THE SCAN
+New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers" -Name "DisableHTTPPrinting" -Type DWord -Value 1
+
 
 # Windows Server 2022 network selection user interface (UI) must not be displayed on the logon screen. 
+## NONE OF THESE FIXED THE SCAN
+New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "DontDisplayNetworkSelectionUI" -Type DWord -Value 1
 
 # Windows Server 2022 users must be prompted to authenticate when the system wakes from sleep (on battery). 
+New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Power\PowerSettings\0e796bdb-100d-47d6-a2d5-f7d2daa51f51" -Name "DCSettingIndex" -Type DWord -Value 1
+## NONE OF THESE FIXED THE SCAN
 
 # Windows Server 2022 users must be prompted to authenticate when the system wakes from sleep (plugged in). 
-# SRG-OS-000095-GPOS-00049
+## NONE OF THESE FIXED THE SCAN
+New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Power\PowerSettings\0e796bdb-100d-47d6-a2d5-f7d2daa51f51" -Name "ACSettingIndex" -Type DWord -Value 1
+
 # Windows Server 2022 Application Compatibility Program Inventory must be prevented from collecting data and sending the information to Microsoft. 
-# SRG-OS-000368-GPOS-00154
+## NONE OF THESE FIXED THE SCAN
+New-Item -force "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\CredUI" -Name "EnumerateAdministrators" -Type DWord -Value 0
+
 # Windows Server 2022 Autoplay must be turned off for nonvolume devices. 
-# SRG-OS-000368-GPOS-00154
+
 # Windows Server 2022 default AutoRun behavior must be configured to prevent AutoRun commands. 
-# SRG-OS-000368-GPOS-00154
+
 # Windows Server 2022 AutoPlay must be disabled for all drives. 
-# SRG-OS-000134-GPOS-00068
+
 # Windows Server 2022 administrator accounts must not be enumerated during elevation. 
-# SRG-OS-000480-GPOS-00227
+## NONE OF THESE FIXED THE SCAN
+New-Item -force "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\CredUI" -Name "EnumerateAdministrators" -Type DWord -Value 0
+
 # Windows Server 2022 Windows Update must not obtain updates from other PCs on the internet. 
-# SRG-OS-000341-GPOS-00132
+
 # Windows Server 2022 Application event log size must be configured to 32768 KB or greater. 
-# SRG-OS-000095-GPOS-00049
+
 # Windows Server 2022 Microsoft Defender antivirus SmartScreen must be enabled. 
-# SRG-OS-000373-GPOS-00156
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "EnableSmartScreen" -Type DWord -Value 1
+
+###############################
+### Remote Desktop Services ###
+###############################
+
 # Windows Server 2022 must not save passwords in the Remote Desktop Client. 
-# SRG-OS-000138-GPOS-00069
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "DisablePasswordSaving" -Type DWord -Value 1
+
 # Windows Server 2022 Remote Desktop Services must prevent drive redirection. 
-# SRG-OS-000373-GPOS-00156
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "fDisableCdm" -Type DWord -Value 1
+
 # Windows Server 2022 Remote Desktop Services must always prompt a client for passwords upon connection. 
-# SRG-OS-000033-GPOS-00014
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "fPromptForPassword" -Type DWord -Value 1
+
 # Windows Server 2022 Remote Desktop Services must require secure Remote Procedure Call (RPC) communications. 
-# SRG-OS-000033-GPOS-00014
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "fEncryptRPCTraffic" -Type DWord -Value 1
+
 # Windows Server 2022 Remote Desktop Services must be configured with the client connection encryption set to High Level. 
-# SRG-OS-000480-GPOS-00227
+## NONE OF THESE FIXED THE SCAN
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "MinEncryptionLevel" -Type DWord -Value 4
+
 # Windows Server 2022 must prevent attachments from being downloaded from RSS feeds. 
-# SRG-OS-000095-GPOS-00049
+## NONE OF THESE FIXED THE SCAN
+New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds" -Name "DisableEnclosureDownload" -Type DWord -Value 1
+
 # Windows Server 2022 must prevent Indexing of encrypted files. 
-# SRG-OS-000362-GPOS-00149
+## NONE OF THESE FIXED THE SCAN
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Search\AllowIndexingEncryptedStoresOrItems" -Name "(Default)" -Type String -Value 0
+
+
 # Windows Server 2022 must prevent users from changing installation options. 
-# SRG-OS-000362-GPOS-00149
+## NONE OF THESE FIXED THE SCAN
+New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Installer" -Name "EnableUserControl" -Type DWord -Value 0
+
 # Windows Server 2022 must disable the Windows Installer Always install with elevated privileges option. 
-# SRG-OS-000042-GPOS-00020
+
 # Windows Server 2022 PowerShell script block logging must be enabled. 
-# SRG-OS-000125-GPOS-00065
+## NONE OF THESE FIXED THE SCAN
+New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Name "EnableScriptBlockLogging" -Type DWord -Value 1
+
+#########################################
+### Windows Remote Management (WinRM) ###
+#########################################
+
 # Windows Server 2022 Windows Remote Management (WinRM) client must not use Basic authentication. 
-# SRG-OS-000393-GPOS-00173
+## NONE OF THESE FIXED THE SCAN
+### Check the config:  winrm get winrm/config/client/auth
+winrm set WinRM/Config/Client/Auth '@{Basic="false";Digest="false";Kerberos="false";Negotiate="true";Certificate="true";CredSSP="false"}'
+
 # Windows Server 2022 Windows Remote Management (WinRM) client must not allow unencrypted traffic. 
-# SRG-OS-000125-GPOS-00065
+## Set Above 
+
 # Windows Server 2022 Windows Remote Management (WinRM) client must not use Digest authentication. 
-# SRG-OS-000125-GPOS-00065
-# Windows Server 2022 Windows Remote Management (WinRM) service must not use Basic authentication. 
-# SRG-OS-000393-GPOS-00173
+## Set Above 
+
 # Windows Server 2022 Windows Remote Management (WinRM) service must not allow unencrypted traffic. 
-# SRG-OS-000373-GPOS-00156
+## Set Above 
+
 # Windows Server 2022 Windows Remote Management (WinRM) service must not store RunAs credentials. 
-# SRG-OS-000041-GPOS-00019
-# Windows Server 2022 must have PowerShell Transcription enabled. 
-# SRG-OS-000379-GPOS-00164
+## NONE OF THESE FIXED THE SCAN
+New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service" -Name "DisableRunAs" -Type DWord -Value 1
+New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service" -Name "DisableRunAsCredSorage" -Type DWord -Value 1
+
+##########################################
+# Windows Server 2022 must have PowerShell Transcription enabled.
+## NONE OF THESE FIXED THE SCAN
+New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription" -Name "EnableTranscripting" -Type DWord -Value 1
+
 # Windows Server 2022 must restrict unauthenticated Remote Procedure Call (RPC) clients from connecting to the RPC server on domain-joined member servers and standalone or nondomain-joined systems. 
-# SRG-OS-000324-GPOS-00125
+## NONE OF THESE FIXED THE SCAN
+New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Rpc" -Name "RestrictRemoteClients" -Type DWord -Value 1
+
 # Windows Server 2022 must restrict remote calls to the Security Account Manager (SAM) to Administrators on domain-joined member servers and standalone or nondomain-joined systems. 
-# SRG-OS-000080-GPOS-00048
+## NONE OF THESE FIXED THE SCAN
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "RestrictRemoteSAM" -Type String -Value "O:BAG:BAD:(A;;RC;;;BA)"
+
 # Windows Server 2022 Deny log on locally user right on domain-joined member servers must be configured to prevent access from highly privileged domain accounts and from unauthenticated access on all systems. 
-# SRG-OS-000066-GPOS-00034
+
 # Windows Server 2022 must have the DoD Root Certificate Authority (CA) certificates installed in the Trusted Root Store. 
-# SRG-OS-000066-GPOS-00034
+
+$certUrl = "https://dl.dod.cyber.mil/wp-content/uploads/pki-pke/zip/certificates_pkcs7_DoD.zip"
+$certificateFile = "$env:TEMP\certificates_pkcs7_DoD.zip"
+
+Invoke-WebRequest -Uri $certUrl -OutFile $certificateFile
+
+## Import the certificates
+Import-Certificate -FilePath $certificateFile -CertStoreLocation Cert:\LocalMachine\Root
+
+
 # Windows Server 2022 must have the DoD Interoperability Root Certificate Authority (CA) cross-certificates installed in the Untrusted Certificates Store on unclassified systems. 
-# SRG-OS-000066-GPOS-00034
+
 # Windows Server 2022 must have the US DoD CCEB Interoperability Root CA cross-certificates in the Untrusted Certificates Store on unclassified systems. 
-# SRG-OS-000480-GPOS-00227
+
 # Windows Server 2022 built-in administrator account must be renamed. 
-# SRG-OS-000480-GPOS-00227
-# Windows Server 2022 built-in guest account must be renamed. 
-# SRG-OS-000480-GPOS-00227
+$newName = "root"
+
+Rename-LocalUser -Name "Administrator" -NewName $newName
+
+$description = "administrator account"
+
+Set-LocalUser -Name $newName -Description $description
+
+# Windows Server 2022 built-in guest account must be renamed.
+$newName = "newguest"
+
+Rename-LocalUser -Name "Guest" -NewName $newName
+
+$description = "guest account"
+
+Set-LocalUser -Name $newName -Description $description
+
 # Windows Server 2022 Smart Card removal option must be configured to Force Logoff or Lock Workstation. 
-# SRG-OS-000423-GPOS-00187
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "scremoveoption" -Type String -Value "2"
+
 # Windows Server 2022 setting Microsoft network client: Digitally sign communications (always) must be configured to Enabled. 
-# SRG-OS-000423-GPOS-00187
-# Windows Server 2022 setting Microsoft network server: Digitally sign communications (always) must be configured to Enabled. 
-# SRG-OS-000138-GPOS-00069
+## NONE OF THESE FIXED THE SCAN
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" -Name "RequireSecuritySignature" -Type DWord -Value 1
+
 # Windows Server 2022 must not allow anonymous enumeration of shares. 
-# SRG-OS-000480-GPOS-00227
+
 # Windows Server 2022 must prevent NTLM from falling back to a Null session. 
-# SRG-OS-000480-GPOS-00227
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\LSA\MSV1_0" -Name "allownullsessionfallback" -Type DWord -Value 0
+
 # Windows Server 2022 must prevent PKU2U authentication using online identities. 
-# SRG-OS-000120-GPOS-00061
+New-Item -force "HKLM:\SYSTEM\CurrentControlSet\Control\LSA\pku2u" -Name "AllowOnlineID" -Type DWord -Value 0
+
 # Windows Server 2022 Kerberos encryption types must be configured to prevent the use of DES and RC4 encryption suites. 
-# SRG-OS-000480-GPOS-00227
+
 # Windows Server 2022 LAN Manager authentication level must be configured to send NTLMv2 response only and to refuse LM and NTLM. 
-# SRG-OS-000480-GPOS-00227
+
 # Windows Server 2022 session security for NTLM SSP-based servers must be configured to require NTLMv2 session security and 128-bit encryption. 
-# SRG-OS-000478-GPOS-00223
+
 # Windows Server 2022 must be configured to use FIPS-compliant algorithms for encryption, hashing, and signing. 
-# SRG-OS-000373-GPOS-00156
+
 # Windows Server 2022 User Account Control (UAC) approval mode for the built-in Administrator must be enabled. 
-# SRG-OS-000373-GPOS-00156
+
 # Windows Server 2022 User Account Control (UAC) must automatically deny standard user requests for elevation. 
-# SRG-OS-000080-GPOS-00048
+
 # Windows Server 2022 Allow log on locally user right must only be assigned to the Administrators group. 
-# SRG-OS-000324-GPOS-00125
+
 # Windows Server 2022 back up files and directories user right must only be assigned to the Administrators group. 
-# SRG-OS-000324-GPOS-00125
+
 # Windows Server 2022 restore files and directories user right must only be assigned to the Administrators group. 
