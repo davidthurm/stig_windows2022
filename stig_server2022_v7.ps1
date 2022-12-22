@@ -205,6 +205,7 @@ New-Item -force "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBloc
 ## NONE OF THESE FIXED THE SCAN
 ### Check the config:  winrm get winrm/config/client/auth
 winrm set WinRM/Config/Client/Auth '@{Basic="false";Digest="false";Kerberos="false";Negotiate="true";Certificate="true";CredSSP="false"}'
+winrm get winrm/config/client/auth
 
 # Windows Server 2022 Windows Remote Management (WinRM) client must not allow unencrypted traffic. 
 ## Set Above 
@@ -237,36 +238,36 @@ Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "Restr
 
 # Windows Server 2022 must have the DoD Root Certificate Authority (CA) certificates installed in the Trusted Root Store. 
 
-$certUrl = "https://dl.dod.cyber.mil/wp-content/uploads/pki-pke/zip/certificates_pkcs7_DoD.zip"
-$certificateFile = "$env:TEMP\certificates_pkcs7_DoD.zip"
+# $certUrl = "https://dl.dod.cyber.mil/wp-content/uploads/pki-pke/zip/certificates_pkcs7_DoD.zip"
+# $certificateFile = "$env:TEMP\certificates_pkcs7_DoD.zip"
 
-Invoke-WebRequest -Uri $certUrl -OutFile $certificateFile
+# Invoke-WebRequest -Uri $certUrl -OutFile $certificateFile
 
-## Import the certificates
-Import-Certificate -FilePath $certificateFile -CertStoreLocation Cert:\LocalMachine\Root
+# ## Import the certificates
+# Import-Certificate -FilePath $certificateFile -CertStoreLocation Cert:\LocalMachine\Root
 
 
-# Windows Server 2022 must have the DoD Interoperability Root Certificate Authority (CA) cross-certificates installed in the Untrusted Certificates Store on unclassified systems. 
+# # Windows Server 2022 must have the DoD Interoperability Root Certificate Authority (CA) cross-certificates installed in the Untrusted Certificates Store on unclassified systems. 
 
-# Windows Server 2022 must have the US DoD CCEB Interoperability Root CA cross-certificates in the Untrusted Certificates Store on unclassified systems. 
+# # Windows Server 2022 must have the US DoD CCEB Interoperability Root CA cross-certificates in the Untrusted Certificates Store on unclassified systems. 
 
-# Windows Server 2022 built-in administrator account must be renamed. 
-$newName = "root"
+# # Windows Server 2022 built-in administrator account must be renamed. 
+# $newName = "root"
 
-Rename-LocalUser -Name "Administrator" -NewName $newName
+# Rename-LocalUser -Name "Administrator" -NewName $newName
 
-$description = "administrator account"
+# $description = "administrator account"
 
-Set-LocalUser -Name $newName -Description $description
+# Set-LocalUser -Name $newName -Description $description
 
-# Windows Server 2022 built-in guest account must be renamed.
-$newName = "newguest"
+# # Windows Server 2022 built-in guest account must be renamed.
+# $newName = "newguest"
 
-Rename-LocalUser -Name "Guest" -NewName $newName
+# Rename-LocalUser -Name "Guest" -NewName $newName
 
-$description = "guest account"
+# $description = "guest account"
 
-Set-LocalUser -Name $newName -Description $description
+# Set-LocalUser -Name $newName -Description $description
 
 # Windows Server 2022 Smart Card removal option must be configured to Force Logoff or Lock Workstation. 
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "scremoveoption" -Type String -Value "2"
@@ -281,6 +282,7 @@ Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstatio
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\LSA\MSV1_0" -Name "allownullsessionfallback" -Type DWord -Value 0
 
 # Windows Server 2022 must prevent PKU2U authentication using online identities. 
+## NONE OF THESE FIXED THE SCAN
 New-Item -force "HKLM:\SYSTEM\CurrentControlSet\Control\LSA\pku2u" -Name "AllowOnlineID" -Type DWord -Value 0
 
 # Windows Server 2022 Kerberos encryption types must be configured to prevent the use of DES and RC4 encryption suites. 
@@ -288,15 +290,22 @@ New-Item -force "HKLM:\SYSTEM\CurrentControlSet\Control\LSA\pku2u" -Name "AllowO
 # Windows Server 2022 LAN Manager authentication level must be configured to send NTLMv2 response only and to refuse LM and NTLM. 
 
 # Windows Server 2022 session security for NTLM SSP-based servers must be configured to require NTLMv2 session security and 128-bit encryption. 
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" -Name "NTLMMinServerSec" -Type DWord -Value 0x20080000
 
 # Windows Server 2022 must be configured to use FIPS-compliant algorithms for encryption, hashing, and signing. 
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FIPSAlgorithmPolicy" -Name "Enabled" -Type DWord -Value 1
 
 # Windows Server 2022 User Account Control (UAC) approval mode for the built-in Administrator must be enabled. 
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "FilterAdministratorToken" -Type DWord -Value 1
 
 # Windows Server 2022 User Account Control (UAC) must automatically deny standard user requests for elevation. 
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "ConsentPromptBehaviorUser" -Type DWord -Value 0
 
 # Windows Server 2022 Allow log on locally user right must only be assigned to the Administrators group. 
 
 # Windows Server 2022 back up files and directories user right must only be assigned to the Administrators group. 
 
 # Windows Server 2022 restore files and directories user right must only be assigned to the Administrators group. 
+
+
+Stop-Transcript
